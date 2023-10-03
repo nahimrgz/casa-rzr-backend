@@ -1,14 +1,17 @@
-export interface Usuarios {
+import { Sucursal } from "./sucursales.model";
+
+export interface Usuario {
  idUsuario: number; 
  idPerfilUsuario: number;
  activo: string; 
  usuario: string; 
  contrasena: string; 
  nombre: string; 
- fecha_creacion: string; 
- fecha_actualizacion: string; 
+ fechaCreacion: string; 
+ fechaActualizacion: string; 
  celular: string; 
- fecha_ingreso: string; 
+ fechaIngreso: string; 
  nss: string;
- sucursales: number[]
+ sucursales?: Sucursal[];
 }
+

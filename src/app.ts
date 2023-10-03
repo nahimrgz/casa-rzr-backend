@@ -3,11 +3,15 @@ import cors from "cors";
 import morgan from "morgan";
 import http from 'http';
 import https from 'https';
+import EstadosRoutes from "./routes/estadosRepublica.routes";
+
 
 
 
 //import of routes
 import MainRouter from "./routes/main.routes";
+import SucursalesRouter from "./routes/sucursales.routes";
+import UsuariosRouter from "./routes/usuarios.routes";
 
 
 // const options = {
@@ -56,25 +60,14 @@ export class App {
 
     routes(): void {
        
+        this.app.use('/api/v1/sucursales', SucursalesRouter);
+        this.app.use('/api/v1/usuarios', UsuariosRouter);
+        this.app.use('/api/v1/estados', EstadosRoutes);
+        
         this.app.use('*', MainRouter);
     }
 
-    generateAlertUUID() {
-        const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        let codigo = '';
-
-        for (let i = 0; i < 10; i++) {
-            const indiceAleatorio = Math.floor(Math.random() * caracteres.length);
-            codigo += caracteres.charAt(indiceAleatorio);
-        }
-
-        // Dividir el código en dos partes separadas por un guion (-)
-        const primeraParte = codigo.substring(0, 5);
-        const segundaParte = codigo.substring(5);
-
-        // Retornar el resultado combinado
-        return `${primeraParte}-${segundaParte}`;
-    }
+    
 
     async listen() {
         this.server.listen(this.app.get('port'));

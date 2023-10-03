@@ -3,9 +3,9 @@ import { Request, Response } from "express";
 export async function getMain(req: Request, resp: Response): Promise<Response> {
     try {
 
-        return resp.status(200).json({
+        return resp.status(404).json({
             error: false,
-            data: 'La casa del rzr v1.0.0'
+            data: 'Recurso no encontrado | La casa del rzr v1.0.0'
         });
     } catch (error) {
         console.log(error);

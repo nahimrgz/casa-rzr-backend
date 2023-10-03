@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import { OkPacket, Pool } from "mysql2/promise";
 import config from "../config/config";
 import { buscarUsuarioEnBD, comparePasswords } from "../helpers/verifyPassword";
-import { Usuarios } from "../models/usuarios.model";
+import { Usuario } from "../models/usuarios.model";
 import { ERROR_TYPE } from "../constants/constants";
 import { encryptPassword } from "../helpers/verifyToken";
 import { Response } from "express";
@@ -12,7 +12,7 @@ export async function signInService(
   usuario: string,
   contrasena: string
 ) {
-  const user: Usuarios = await buscarUsuarioEnBD(conn, usuario);
+  const user: Usuario = await buscarUsuarioEnBD(conn, usuario);
 
   if (!user || !user.activo) throw ERROR_TYPE.WRONG_USER_PASWORD; // Usuario o contraseña incorrectos
   if (!(await comparePasswords(contrasena, user.contrasena)))
@@ -32,7 +32,7 @@ export async function signInService(
   return { token, user };
 }
 
-export async function registerUserDB(conn: Pool, user: Usuarios) {
+export async function registerUserDB(conn: Pool, user: Usuario) {
   const query = `INSERT INTO usuarios (nombre, correo, celular, contrasena, activo, idPerfil) VALUE (?,?,?,?,1,?)`;
   const [rows, fields] = await conn.query(query, [
     user.nombre,

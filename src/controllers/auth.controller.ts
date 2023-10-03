@@ -1,6 +1,6 @@
 import { Response, Request } from "express";
 import { Connect } from "../database/dataBaseConnection";
-import { Usuarios } from "../models/usuarios.model";
+import { Usuario } from "../models/usuarios.model";
 import { encryptPassword } from "../helpers/verifyToken";
 import { registerUserDB,  signInService } from "../services/auth.services";
 import { errorResponse } from "../helpers/errorsResponse";
@@ -37,7 +37,7 @@ export async function register(
   const conn = await Connect();
 
   try {
-    const user: Usuarios = req.body;
+    const user: Usuario = req.body;
 
     await conn.query("START TRANSACTION;");
     user.contrasena = await encryptPassword(user.contrasena);

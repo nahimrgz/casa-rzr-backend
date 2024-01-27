@@ -2,13 +2,19 @@ import { Sucursal } from "../models/sucursales.model";
 import { Usuario } from "../models/usuarios.model";
 
 export async function getUsersFromDB(conn: any, idUsuario: string | null, offset: number, pageSize: number): Promise<any> {
-  
+    // fechaIngreso datetime 
+    // nss varchar(45) 
+    // activo tinyint
    const query = `
    SELECT 
     JSON_ARRAYAGG(JSON_OBJECT('idUsuario',
                     idUsuario,
-                    'nombreUsuario',
+                    'nombre',
                     nombreUsuario,
+                    'nss',
+                    nss,
+                    'fechaIngreso',
+                    fechaIngreso,
                     'email',
                     email,
                     'celular',
@@ -38,10 +44,12 @@ export async function getUsersFromDB(conn: any, idUsuario: string | null, offset
     (SELECT 
         u.idUsuario,
             u.nombre AS nombreUsuario,
-            u.usuario AS email,
+            u.email AS email,
             u.celular,
             pu.perfilUsuario,
             u.idPerfilUsuario,
+            u.nss,
+            u.fechaIngreso,
             u.activo
     FROM
         usuarios u

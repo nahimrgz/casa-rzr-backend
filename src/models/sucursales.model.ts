@@ -1,7 +1,7 @@
 import { Usuario } from "./usuarios.model";
 
 export interface Sucursal {
-    idSucursal: number;
+    idSucursal?: number;
     idCiudad: number;
     nombreSucursal: string;
     ciudad: string;

@@ -2,7 +2,7 @@ import { Response, Request } from "express";
 import { Connect } from "../database/dataBaseConnection";
 import { Usuario } from "../models/usuarios.model";
 import { encryptPassword } from "../helpers/verifyToken";
-import { registerUserDB,  signInService } from "../services/auth.services";
+import { registerUserDB,  signInService } from "../services/auth.service";
 import { errorResponse } from "../helpers/errorsResponse";
 
 export async function signIn(req: Request, resp: Response): Promise<Response> {

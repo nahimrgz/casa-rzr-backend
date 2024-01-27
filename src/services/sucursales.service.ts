@@ -5,47 +5,43 @@ import { Sucursal } from "../models/sucursales.model";
 import { Usuario } from "../models/usuarios.model";
 
 export async function getSucursalesFromDB(conn: any): Promise<any> {
-    
+
     const [rows, fields] = await conn.query(getQueryForSucursales());
     const respDB = JSON.parse(JSON.stringify(rows));
     if (respDB && respDB[0].data) return respDB[0].data
     else return []
-    
+
 }
 
 export async function insertSucursalOnDB(conn: any, sucursal: Sucursal) {
-    const sucursalCopy =  { ...sucursal }; // Crea una copia del objeto y asi no modificar el objeto original
+    const sucursalCopy = { ...sucursal }; // Crea una copia del objeto y asi no modificar el objeto original
     delete sucursalCopy.usuarios;
 
     const columnas = Object.keys(sucursalCopy).join(', ');
     const valores = Object.values(sucursalCopy);
     const marcadores = valores.map(() => '?').join(', ');
     const sql = `INSERT INTO sucursales (${columnas}) VALUES (${marcadores})`;
-  
+
     const [rows, fields] = await conn.query(sql, valores);
     const respDB = JSON.parse(JSON.stringify(rows));
     if (respDB && respDB.insertId) return respDB.insertId
-    else return 0 
+    else return 0
 }
 
 export async function insertUsuariosSucursal(conn: any, idSucursal: number, usuarios: Usuario[] | undefined): Promise<void> {
     if (idSucursal && usuarios) {
-        
-        let query = `INSERT INTO usuarios_has_sucursales(idUsuario, idSucursal) VALUES `
-        usuarios.forEach((usuario, index, array) => {
-            query = query.concat(`(${usuario.idUsuario}, ${idSucursal})`)
-            if (index !== array.length - 1) {
-                query = query.concat(',')
-            }
-        });
-        
-       const [rows, fields] = await conn.query(query);
-       const respDB = JSON.parse(JSON.stringify(rows));
-       
+
+        const columnas = 'idUsuario, idSucursal'
+        const valores = usuarios.map(usuario => `(${Object.values(usuario).map(idUsuario => `'${idUsuario}', '${idSucursal}'`).join(', ')})`).join(', ');
+
+        const sql = `INSERT INTO usuarios_has_sucursales (${columnas}) VALUES ${valores}`;
+        // sql = INSERT INTO usuarios_has_sucursales (idUsuario, idSucursal) VALUES ('5', '15'), ('3', '15')
+
+        await conn.query(sql);
     }
 }
 
- function getQueryForSucursales() {
+function getQueryForSucursales() {
     return `
     SELECT 
         JSON_ARRAYAGG(JSON_OBJECT('idSucursal',
@@ -56,6 +52,8 @@ export async function insertUsuariosSucursal(conn: any, idSucursal: number, usua
                         nombreEstado,
                         'ciudad',
                         nombreCiudad,
+                        'idCiudad',
+                        idCiudad,
                         'telefono',
                         telefono,
                         'direccion',
@@ -86,10 +84,30 @@ export async function insertUsuariosSucursal(conn: any, idSucursal: number, usua
                 s.direccion,
                 s.codigoPostal,
                 e.nombre AS nombreEstado,
-                cu.nombre AS nombreCiudad
+                cu.nombre AS nombreCiudad,
+                cu.idCiudad
         FROM
             sucursales s
         INNER JOIN ciudades cu ON s.idCiudad = cu.idCiudad
         INNER JOIN estados_republica e ON cu.idEstadoRep = e.idEstadoRep) AS json_result;
     `
+}
+
+export async function updateSucursal(conn: any, suc: Sucursal): Promise<void> {
+    const sucursalCopy = { ...suc } /* Tu objeto con las actualizaciones */;
+    delete sucursalCopy.usuarios;
+    delete sucursalCopy.idSucursal;
+    const condiciones = `idSucursal = ?` /* Tu condición de actualización */;
+
+    // Construir la parte SET de la consulta
+    const actualizaciones = Object.keys(sucursalCopy).map((columna) => `${columna} = ?`).join(', ');
+
+    // Construir la consulta UPDATE completa
+    const sql = `UPDATE sucursales SET ${actualizaciones} WHERE ${condiciones}`;
+
+    // Obtener los valores de las actualizaciones
+    const valores = Object.values(sucursalCopy);
+
+    // Ejecutar la consulta
+    await conn.query(sql, [...valores, suc.idSucursal]);
 }

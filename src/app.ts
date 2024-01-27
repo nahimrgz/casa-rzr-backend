@@ -3,7 +3,7 @@ import cors from "cors";
 import morgan from "morgan";
 import http from 'http';
 import https from 'https';
-import EstadosRoutes from "./routes/estadosRepublica.routes";
+import EstadosRouter from "./routes/estadosRepublica.routes";
 
 
 
@@ -12,6 +12,8 @@ import EstadosRoutes from "./routes/estadosRepublica.routes";
 import MainRouter from "./routes/main.routes";
 import SucursalesRouter from "./routes/sucursales.routes";
 import UsuariosRouter from "./routes/usuarios.routes";
+import ProveedoresRouter from "./routes/proveedores.routes";
+import CategoriasProductoRouter from "./routes/categoriasProducto.routes";
 
 
 // const options = {
@@ -62,7 +64,9 @@ export class App {
        
         this.app.use('/api/v1/sucursales', SucursalesRouter);
         this.app.use('/api/v1/usuarios', UsuariosRouter);
-        this.app.use('/api/v1/estados', EstadosRoutes);
+        this.app.use('/api/v1/estados', EstadosRouter);
+        this.app.use('/api/v1/proveedores', ProveedoresRouter);
+        this.app.use('/api/v1/categorias', CategoriasProductoRouter);
         
         this.app.use('*', MainRouter);
     }

@@ -6,24 +6,21 @@ export async function buscarUsuarioEnBD(
 ): Promise<any> {
   const query = `
   SELECT 
-      usuarios.idUsuario,
+      usuarios.idUsuario as idVendedor,
       usuarios.activo,
-      idPerfil,
+      idPerfilUsuario,
       contrasena,
-      nombreEmpleado,
-      correo,
-      celular as cellphone,
-      GROUP_CONCAT(DISTINCT socketRoomName
-          ORDER BY plantas.idPlanta) AS socketRoomName
+      nombre,
+      email,
+      celular,
+      uhs.idSucursal
   FROM
       usuarios
           INNER JOIN
-      plantas_has_usuarios uhp ON uhp.idUsuario = usuarios.idUsuario
-      inner join plantas ON uhp.idPlanta = plantas.idPlanta
+      usuarios_has_sucursales uhs on uhs.idUsuario = usuarios.idUsuario
   WHERE
-      correo LIKE ?
-  and usuarios.activo = 1
-  GROUP BY usuarios.idUsuario , idPerfil , contrasena , nombreEmpleado  , correo;`;
+      email = ?
+  and usuarios.activo = 1;`;
 
   const [rows, fields] = await conn.query(query, usuario);
   return JSON.parse(JSON.stringify(rows))[0];

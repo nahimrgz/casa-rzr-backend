@@ -4,10 +4,10 @@ export interface Sucursal {
     idSucursal?: number;
     idCiudad: number;
     nombreSucursal: string;
-    ciudad: string;
-    estado: string;
+    ciudad?: string;
+    estado?: string;
     direccion: string;
     telefono: string;
     codigoPostal: number;
-    usuarios?: Usuario[];
+    usuarios?: Usuario[] | number[];
 }

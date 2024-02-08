@@ -1,8 +1,13 @@
 import { Proveedor } from "../models/proveedor.model";
 
-export async function getProveedoresFromDB(conn: any, idProveedor: string | null, offset: number, pageSize: number): Promise<any> {
+export async function getProveedoresFromDB(conn: any, idProveedor: number | null, nombreProveedor: string, offset: number, pageSize: number): Promise<any> {
 
-    const [rows, fields] = await conn.query(`SELECT * FROM proveedores WHERE ? IS NULL OR idProveedor = ? ORDER BY nombreProveedor ASC LIMIT ?, ?`, [idProveedor, idProveedor, offset, pageSize]);
+    const [rows, fields] = await conn.query(`
+        SELECT * 
+        FROM proveedores 
+        WHERE (? IS NULL OR idProveedor = ?) 
+            AND (nombreProveedor LIKE CONCAT("%", ?, "%")) 
+        ORDER BY nombreProveedor ASC -- LIMIT ?, ?`, [idProveedor, idProveedor, nombreProveedor, offset, pageSize]);
     const respDB = JSON.parse(JSON.stringify(rows));
     return respDB;
 
@@ -10,8 +15,10 @@ export async function getProveedoresFromDB(conn: any, idProveedor: string | null
 
 export async function insertProveedorOnDB(conn: any, proveedor: Proveedor) {
 
-    const columnas = Object.keys(proveedor).join(', ');
-    const valores = Object.values(proveedor);
+    const provCopy = {...proveedor}
+    delete  provCopy.idProveedor;
+    const columnas = Object.keys(provCopy).join(', ');
+    const valores = Object.values(provCopy);
     const marcadores = valores.map(() => '?').join(', ');
     const sql = `INSERT INTO proveedores (${columnas}) VALUES (${marcadores})`;
 

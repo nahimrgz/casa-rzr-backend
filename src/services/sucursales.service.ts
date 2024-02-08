@@ -16,6 +16,9 @@ export async function getSucursalesFromDB(conn: any): Promise<any> {
 export async function insertSucursalOnDB(conn: any, sucursal: Sucursal) {
     const sucursalCopy = { ...sucursal }; // Crea una copia del objeto y asi no modificar el objeto original
     delete sucursalCopy.usuarios;
+    delete sucursalCopy.idSucursal;
+    delete sucursalCopy.ciudad;
+    delete sucursalCopy.estado;
 
     const columnas = Object.keys(sucursalCopy).join(', ');
     const valores = Object.values(sucursalCopy);
@@ -28,15 +31,18 @@ export async function insertSucursalOnDB(conn: any, sucursal: Sucursal) {
     else return 0
 }
 
-export async function insertUsuariosSucursal(conn: any, idSucursal: number, usuarios: Usuario[] | undefined): Promise<void> {
+export async function insertUsuariosSucursal(conn: any, idSucursal: number, usuarios: number[] | undefined | Usuario[]): Promise<void> {
     if (idSucursal && usuarios) {
 
-        const columnas = 'idUsuario, idSucursal'
-        const valores = usuarios.map(usuario => `(${Object.values(usuario).map(idUsuario => `'${idUsuario}', '${idSucursal}'`).join(', ')})`).join(', ');
-
-        const sql = `INSERT INTO usuarios_has_sucursales (${columnas}) VALUES ${valores}`;
+        await conn.query('DELETE FROM usuarios_has_sucursales  WHERE idSucursal = ?', [idSucursal]);
         // sql = INSERT INTO usuarios_has_sucursales (idUsuario, idSucursal) VALUES ('5', '15'), ('3', '15')
+        let sql = `INSERT INTO usuarios_has_sucursales (idUsuario, idSucursal) VALUES `;
+        usuarios.forEach(element => {
+            sql += ` (${element}, ${idSucursal}),`;
 
+        });
+        // Elimina la última coma y añade un punto y coma al final
+        sql = sql.slice(0, -1) + ';';
         await conn.query(sql);
     }
 }
@@ -97,6 +103,8 @@ export async function updateSucursal(conn: any, suc: Sucursal): Promise<void> {
     const sucursalCopy = { ...suc } /* Tu objeto con las actualizaciones */;
     delete sucursalCopy.usuarios;
     delete sucursalCopy.idSucursal;
+    delete sucursalCopy.ciudad;
+    delete sucursalCopy.estado;
     const condiciones = `idSucursal = ?` /* Tu condición de actualización */;
 
     // Construir la parte SET de la consulta

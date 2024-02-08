@@ -1,17 +1,19 @@
 import { Sucursal } from "./sucursales.model";
 
 export interface Usuario {
- idUsuario: number; 
+ idVendedor: number; 
  idPerfilUsuario: number;
  activo: string; 
  usuario: string; 
- contrasena: string; 
+ contrasena?: string; 
  nombre: string; 
- fechaCreacion: string; 
- fechaActualizacion: string; 
+ fechaCreacion?: string; 
+ fechaActualizacion?: string; 
  celular: string; 
- fechaIngreso: string; 
+ fechaIngreso?: string; 
  nss: string;
- sucursales?: Sucursal[];
+ idSucursal: number;
+ sucursales?: Sucursal[] | number[];
+ perfilUsuario?: string;
 }
 

@@ -1,3 +1,4 @@
+import { hash } from "bcrypt";
 import { Sucursal } from "../models/sucursales.model";
 import { Usuario } from "../models/usuarios.model";
 
@@ -66,27 +67,33 @@ export async function getUsersFromDB(conn: any, idUsuario: string | null, offset
 
 }
 
-export async function insertUsuarioOnDB(conn: any, usuario: Usuario) {
+export async function insertUsuarioOnDB(conn: any, usuario: Usuario, hash: string) {
     const usuarioCopy = { ...usuario}; // Crea una copia del objeto y asi no modificar el objeto original
     delete usuarioCopy.sucursales;
+    delete usuarioCopy.contrasena;
+    delete usuarioCopy.perfilUsuario;
+    delete usuarioCopy.fechaCreacion;
+    delete usuarioCopy.fechaActualizacion;
 
     const columnas = Object.keys(usuarioCopy).join(', ');
     const valores = Object.values(usuarioCopy);
     const marcadores = valores.map(() => '?').join(', ');
-    const sql = `INSERT INTO usuarios (${columnas}) VALUES (${marcadores})`;
+    const sql = `INSERT INTO usuarios (contrasena, ${columnas}) VALUES (?, ${marcadores})`;
 
-    const [rows, fields] = await conn.query(sql, valores);
+    const [rows, fields] = await conn.query(sql, [hash, ...valores]);
     const respDB = JSON.parse(JSON.stringify(rows));
+    console.log("🚀 ~ insertUsuarioOnDB ~ respDB.insertId:", respDB.insertId)
+    console.log("🚀 ~ insertUsuarioOnDB ~ respDB:", respDB)
     if (respDB && respDB.insertId) return respDB.insertId
     else return 0 
 }
 
-export async function insertSucursales(conn: any, idUsuario: number, sucursales: Sucursal[] | undefined): Promise<void> {
+export async function insertSucursales(conn: any, idUsuario: number, sucursales: number[] | undefined | Sucursal[]): Promise<void> {
     if (idUsuario && sucursales) {
         
         let query = `INSERT INTO usuarios_has_sucursales(idSucursal, idUsuario) VALUES `
         sucursales.forEach((sucursal, index, array) => {
-            query = query.concat(`(${sucursal.idSucursal}, ${idUsuario})`)
+            query = query.concat(`(${sucursal}, ${idUsuario})`)
             if (index !== array.length - 1) {
                 query = query.concat(',')
             }

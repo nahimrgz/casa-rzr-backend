@@ -2,26 +2,21 @@ import { Response } from "express";
 import { Request } from "../models/type";
 import { Connect } from "../database/dataBaseConnection";
 import { getOffsetOfPagination } from "../helpers/getOffsetPagination";
-import { getUsersFromDB, insertSucursales, insertUsuarioOnDB } from "../services/usuarios.service";
-import { Usuario } from "../models/usuarios.model";
-import { encryptPassword } from "../helpers/verifyToken";
+import { actualizarClienteEnDB, buscarClientesEnBD, crearNuevoClienteEnDB } from "../services/clientes.service";
+import { Cliente } from "../models/cliente.model";
 
-export async function getUsersController(req: Request, resp: Response): Promise<Response> {
+export async function getClientesController(req: Request, resp: Response): Promise<Response> {
     const conn = await Connect();
 
     try {
 
-        const idUsuario = typeof (req.query.idUsuario) === 'string' ? req.query.idUsuario : null;
-        const pageIndex = parseInt(req.query.pageIndex as string, 10) || 1;
-        const pageSize = parseInt(req.query.pageSize as string, 10) || 15;
-
-        const offset = getOffsetOfPagination(pageIndex, pageSize);
-        const data = await getUsersFromDB(conn, idUsuario, offset, pageSize);
-
+        const idCliente = typeof (req.query.idCliente) === 'string' && req.query.idCliente.length > 0 ? parseInt(req.query.idCliente as string, 10) : null;
+        const nombreCliente = typeof (req.query.nombreCliente) === 'string' && req.query.nombreCliente.length > 0 ? req.query.nombreCliente : '';
+        const clientes = await buscarClientesEnBD(conn, idCliente, nombreCliente)
 
         return resp.json({
             error: false,
-            data: data
+            data: clientes
         });
     } catch (error) {
         console.log(error);
@@ -45,23 +40,22 @@ export async function getUsersController(req: Request, resp: Response): Promise<
     }
 }
 
-export async function crearNuevoUsuarioController(req: Request, resp: Response): Promise<Response> {
+export async function crearNuevoClienteController(req: Request, resp: Response): Promise<Response> {
     const conn = await Connect();
     
     try {
-        const usuario: Usuario = req.body;
-        const hash = await encryptPassword(usuario.contrasena);
-        await conn.query("START TRANSACTION");
-        const idUsuario = await insertUsuarioOnDB(conn, usuario, hash);
-        await insertSucursales(conn, idUsuario, usuario.sucursales);
-        await conn.query("COMMIT")
+        const nuevoCliente: Cliente = req.body;
+        const idCliente  = await crearNuevoClienteEnDB(conn, nuevoCliente);
+        
         return resp.json({
             error: false,
-            data: 'ok'
+            data: {
+                idCliente,
+                nombreCliente: nuevoCliente.nombreCliente
+            }
         });
     } catch (error) {
         console.log(error);
-        await conn.query("ROLLBACK");
         switch (error) {
             case '1':
                 return resp.status(200).json({
@@ -74,7 +68,7 @@ export async function crearNuevoUsuarioController(req: Request, resp: Response):
                 return resp.status(500).json({
                     error: true,
                     mensaje: 'Ocurrió un error',
-                    data: error
+                    data: null
                 })
             }
     } finally {
@@ -82,17 +76,18 @@ export async function crearNuevoUsuarioController(req: Request, resp: Response):
     }
 }
 
-export async function getPerfilesUsuario(req: Request, resp: Response): Promise<Response> {
+export async function actualizarClienteController(req: Request, resp: Response): Promise<Response> {
     const conn = await Connect();
     
     try {
-        const query = 'SELECT * FROM perfiles_usuario ORDER BY perfilUsuario';
-        const [rows, fields] = await conn.query(query);
-        const respDB = JSON.parse(JSON.stringify(rows));
+        const cliente: Cliente = req.body;
+        if (!cliente.idCliente) throw "Falta el ID del cliente";
+        await actualizarClienteEnDB(conn, cliente)
         
         return resp.json({
             error: false,
-            data: respDB
+            data: [],
+            mensaje: 'Cliente actualizado correctamente.' 
         });
     } catch (error) {
         console.log(error);
@@ -104,7 +99,6 @@ export async function getPerfilesUsuario(req: Request, resp: Response): Promise<
                     mensaje: 'Sin información'
                 });
             default:
-                console.log(error);
                 return resp.status(500).json({
                     error: true,
                     mensaje: 'Ocurrió un error',

@@ -1,7 +1,7 @@
 {
   "name": "casa-rzr-backend",
   "version": "1.0.0",
-  "description": "Backend for La Casa del Rzr",
+  "description": "Backend for La Casa del Rzr | Quality environment",
   "main": "index.js",
   "scripts": {
     "dev": "nodemon src/index.ts --exec ts-node"

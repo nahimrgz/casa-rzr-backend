@@ -14,6 +14,12 @@ import SucursalesRouter from "./routes/sucursales.routes";
 import UsuariosRouter from "./routes/usuarios.routes";
 import ProveedoresRouter from "./routes/proveedores.routes";
 import CategoriasProductoRouter from "./routes/categoriasProducto.routes";
+import ProductosRouter from './routes/productos.routes';
+import VentasRouter from './routes/ventas.routes';
+import ClientesRouter from './routes/clientes.routes';
+import AuthRouter from './routes/auth.routes';
+import MarcasRouter from './routes/marcas.routes';
+import TiposVehiculosRouter from './routes/tiposVehiculos.routes';
 
 
 // const options = {
@@ -47,7 +53,7 @@ export class App {
         this.routes();
     }
 
-    
+
 
     settings(): void {
         this.app.set('port', process.env.PORT || this.port || 3005);
@@ -61,17 +67,24 @@ export class App {
     }
 
     routes(): void {
-       
+
         this.app.use('/api/v1/sucursales', SucursalesRouter);
         this.app.use('/api/v1/usuarios', UsuariosRouter);
         this.app.use('/api/v1/estados', EstadosRouter);
         this.app.use('/api/v1/proveedores', ProveedoresRouter);
         this.app.use('/api/v1/categorias', CategoriasProductoRouter);
-        
+        this.app.use('/api/v1/productos', ProductosRouter);
+        this.app.use('/api/v1/ventas', VentasRouter);
+        this.app.use('/api/v1/clientes', ClientesRouter);
+        this.app.use('/api/v1/auth', AuthRouter);
+        this.app.use('/api/v1/marcas', MarcasRouter);
+        this.app.use('/api/v1/tiposVehiculos', TiposVehiculosRouter);
+
+
         this.app.use('*', MainRouter);
     }
 
-    
+
 
     async listen() {
         this.server.listen(this.app.get('port'));

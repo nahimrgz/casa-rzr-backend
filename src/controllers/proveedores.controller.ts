@@ -11,17 +11,21 @@ import { Proveedor } from "../models/proveedor.model";
 
 export async function getProveedres(req: Request, resp: Response): Promise<Response> {
     const conn = await Connect();
-    
+
     try {
 
-        const idProveedor = typeof (req.query.idProveedor) === 'string' ? req.query.idProveedor : null;
+        const idProveedor = typeof (req.query.idProveedor) === 'string' ? parseInt(req.query.idProveedor as string, 10) : null;
+        const nombreProveedor = typeof (req.query.nombreProveedor) === 'string' ? req.query.nombreProveedor : '';
         const pageIndex = parseInt(req.query.pageIndex as string, 10) || 1;
         const pageSize = parseInt(req.query.pageSize as string, 10) || 15;
 
         const offset = getOffsetOfPagination(pageIndex, pageSize);
 
         // const idUsuario = typeof (req.query.idUsuario) === 'string' ? parseInt(req.query.idUsuario) : null;
-        const data = await getProveedoresFromDB(conn, idProveedor, offset, pageSize);
+        const data = await getProveedoresFromDB(conn, idProveedor, nombreProveedor, offset, pageSize);
+        if (data && data.length === 0) {
+            data.push({idProveedor: -1, nombreProveedor})
+        }
 
         return resp.json({
             error: false,
@@ -55,12 +59,15 @@ export async function createProveedorController(req: Request, resp: Response): P
     try {
         const prov: Proveedor = req.body;
         await conn.query('START TRANSACTION;');
-        await insertProveedorOnDB(conn, prov);
+        const idProveedor = await insertProveedorOnDB(conn, prov);
         await conn.query('COMMIT;');
 
         return resp.json({
             error: false,
-            data: 'Proveedor creado correctamente'
+            data: [{
+                idProveedor,
+                nombreProveedor: prov.nombreProveedor
+            }]
         });
     } catch (error) {
         console.log(error);
